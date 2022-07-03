@@ -1,0 +1,142 @@
+﻿@page "/ticketedit/{id:int}"
+@layout TicketLayout
+
+@using ITTicketSystem.Data.Tickets
+
+@inject ITicketService TicketService
+@inject NavigationManager NavigationManager
+
+<div class="modal fade show" id="myModal" style="display: block; background-color: #2F363E;" aria-modal="true" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">@pageTitle</h4>
+                <button type="button" class="close" @onclick="@Cancel">&times;</button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@tickets" OnValidSubmit="@TicketSave">
+                    <table class="editform">
+                        <tr>
+                            <td>Requester</td>                            
+                            <td><input type="text" class="input-label" @bind="tickets.RequestedBy" required /></td>
+                        </tr>                                                
+                        <tr>
+                            <td>Title</td>
+                            <td>                                
+                                <input type="text" class="input-label" @bind="tickets.Title" required />                                
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Category</td>
+                            <td><input type="text" class="input-label" @bind="tickets.Category" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Description</td>
+                            <td><textarea type="text" class="input-label-multiline" @bind="tickets.Description" required wrap="soft"/></td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>
+                                <InputSelect id="status" @bind-Value="tickets.TicketStatus" required class="form-control">
+                                    <option value="">Select a Status</option>
+                                    <option value="New">New</option>
+                                    <option value="Acknowledged">Acknowledged</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Closed">Closed</option>
+                                    <option value="Completed">Completed</option>
+                                </InputSelect>                                                                
+                            </td>
+                        </tr>       
+                        <tr>
+                            <td>Assigned To</td>
+                            <td><input type="text" class="input-label" @bind="tickets.AssignedTo" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Notes</td>
+                            <td><textarea type="text" class="input-label-multiline" @bind="tickets.TicketNotes" wrap="soft" /></td>
+                        </tr>
+                        <tr>
+                            <td>Updated Date</td>
+                            <td><input type="date" class="input-label" @bind="tickets.UpdatedDate" required min="1900-01-01" max="2050-12-31" /></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="text-align: center">
+                                <input type="submit" class="btn btn-primary" value="@buttonText" />
+                                <input type="button" class="btn btn-primary" value="Cancel" @onclick="@Cancel" />
+                            </td>
+                        </tr>
+                    </table>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    Ticket tickets = new Ticket();
+
+    [Parameter]
+    public int id { get; set; }
+
+    public string pageTitle = "Add Ticket";
+    public string buttonText = "Add";
+
+    public class TicketStatus
+    {
+        public int StatusID { get; set; }
+        public string StatusName { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        DateTime defaultdate = DateTime.Today;
+        if (id == 0)
+        {
+            tickets.UpdatedDate = defaultdate;
+            tickets.TicketStatus = "New";
+        }
+        else
+        {
+            pageTitle = "Edit Ticket";
+            buttonText = "Save";
+            tickets = await TicketService.Ticket_GetOne(id);
+            tickets.UpdatedDate = defaultdate;
+        }
+    }
+
+    protected async Task TicketSave()
+    {
+        if (id == 0)
+        {
+            await TicketService.TicketInsert(tickets);
+        }
+        else
+        {
+            await TicketService.TicketUpdate(tickets);
+        }
+        NavigationManager.NavigateTo("/ticketlist");
+    }
+
+        public class GamesData
+    {
+        public string Name { get; set; }
+        public string ID { get; set; }
+    }
+
+    List<GamesData> Games = new List<GamesData>
+    {
+        new GamesData() {ID= "Game1", Name= "Badminton"},
+        new GamesData() {ID= "Game2", Name= "Basketball"},
+        new GamesData() {ID= "Game3", Name= "Cricket"},
+        new GamesData() {ID= "Game4", Name= "Footbal"},
+        new GamesData() {ID= "Game5", Name= "Golf"},
+        new GamesData() {ID= "Game6", Name= "Hockey"},
+        new GamesData() {ID= "Game7", Name= "Tennis"}
+    };
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/ticketlist");
+    }
+}

@@ -1,0 +1,62 @@
+﻿@page "/ticketlist"
+@layout TicketLayout
+
+@using ITTicketSystem.Data.Tickets
+
+@inject ITicketService TicketService
+@inject IModalService modal
+
+<a href="ticketedit/0" class="btn btn-primary">Add Ticket</a>
+<a href="tickethistory" class="btn btn-primary">Show History</a>
+<br />
+<br />
+
+@if (tickets == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Requester</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ticket in tickets)
+            {
+                <tr>
+                    <td>@ticket.RequestedBy</td>
+                    <td>@ticket.Title</td>
+                    <td>@ticket.Category</td>
+                    <td>@ticket.TicketStatus</td>
+                    <td>@ticket.AssignedTo</td>
+                    <td>
+                        <a href="ticketedit/@ticket.TicketID" class="btn btn-primary">
+                            <span class="oi oi-pencil"></span>
+                        </a>
+                        <a class="btn btn-danger">
+                            <span class="oi oi-trash"></span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    IEnumerable<Ticket> tickets;
+
+    protected override async Task OnInitializedAsync()
+    {
+        tickets = await TicketService.TicketList();
+    }
+}

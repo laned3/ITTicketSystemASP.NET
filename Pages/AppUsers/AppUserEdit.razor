@@ -1,0 +1,100 @@
+﻿@page "/appuseredit/{id:int}"
+@layout UserLayout
+
+@using ITTicketSystem.Data.AppUsers
+
+@inject IAppUserService AppUserService
+@inject NavigationManager NavigationManager
+
+<div class="modal fade show" id="myModal" style="display: block; background-color: #2F363E;" aria-modal="true" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">@pageTitle</h4>
+                <button type="button" class="close" @onclick="@Cancel">&times;</button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@appUsers" OnValidSubmit="@AppUserSave">
+                    <table class="editform">
+                        <tr>
+                            <td>First Name</td>
+                            <td><input type="text" class="input-label" @bind="appUsers.FirstName" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Last Name</td>
+                            <td><input type="text" class="input-label" @bind="appUsers.LastName" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Email Address</td>
+                            <td><input type="text" class="input-label" @bind="appUsers.EmailAddress" required /></td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>
+                                <InputSelect id="status" @bind-Value="appUsers.Status" required class="form-control">
+                                    <option value="">Select a Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </InputSelect>
+                            </td>
+                        </tr>                                               
+                        <tr>
+                            <td>Updated Date</td>
+                            <td><input type="date" class="input-label" @bind="appUsers.UpdatedDate" required min="1900-01-01" max="2050-12-31" /></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: center">
+                                <input type="submit" class="btn btn-primary" value="@buttonText" />                                                                
+                                <input type="button" class="btn btn-primary" value="Cancel" @onclick="@Cancel" />
+                            </td>
+                        </tr>
+                    </table>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    AppUser appUsers = new AppUser();
+
+    [Parameter]
+    public int id { get; set; }
+
+    public string pageTitle = "Add User";
+    public string buttonText = "Add";
+
+    protected override async Task OnInitializedAsync()
+    {
+        DateTime defaultdate = DateTime.Today;
+        if (id == 0)
+        {
+            appUsers.UpdatedDate = defaultdate;            
+        }
+        else
+        {
+            pageTitle = "Edit User";
+            buttonText = "Save";
+            appUsers = await AppUserService.AppUser_GetOne(id);
+            appUsers.UpdatedDate = defaultdate;
+        }
+    }  
+
+    protected async Task AppUserSave()
+    {
+        if (id == 0)
+        {
+            await AppUserService.AppUserInsert(appUsers);
+        }
+        else
+        {
+            await AppUserService.AppUserUpdate(appUsers);
+        }
+        NavigationManager.NavigateTo("/appuserlist");
+    }
+
+    void Cancel()
+    {
+        NavigationManager.NavigateTo("/appuserlist");
+    }
+}

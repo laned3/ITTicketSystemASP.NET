@@ -1,0 +1,139 @@
+﻿@page "/"
+@layout DashboardLayout
+
+@using ITTicketSystem.Data.Tickets
+@using ITTicketSystem.Data.AppUsers
+
+@inject ITicketService TicketService
+@inject IAppUserService AppUserService
+
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card-1">
+            <div class="card-body">
+                <b style="font-size: 24px;">Active Users</b>
+                <br />
+                @if (countAppUsers == null)
+                {
+                    <b>No Results to Display</b>
+                }
+                else
+                {
+                    @foreach (var countAppUsers in countAppUsers)
+                    {
+                        <b style="font-size: 24px;">@countAppUsers.TotalCount</b>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card-2" style="background-color: #920000; text-align: center;">
+            <div class="card-body">
+                <b>Unhandled Tickets</b>
+                <br />
+                @if (unhandledTickets == null)
+                {
+                    <b>No Results to Display</b>
+                }
+                else
+                {
+                    @foreach (var unhandledTickets in unhandledTickets)
+                    {
+                        @unhandledTickets.UnhandledTickets
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row-2">
+    <div class="col-lg-8">
+        <div class="card-4">
+            <div class="card-body">
+                @if (ticketAnalysis == null)
+                {
+                    <b>No Results to Display</b>
+                }
+                else
+                {
+                    <table style="text-align: center;">
+
+                        <thead>
+                            <tr>
+                                <th># of Open Tickets</th>
+                                <th># of Completed Tickets</th>
+                                <th># of Cancelled Tickets</th>
+                                <th>Submitted Date</th>
+                                <th>Assigned User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ticketAnalysis in ticketAnalysis)
+                            {
+                                <tr>
+                                    <td>@ticketAnalysis.OpenTickets</td>
+                                    <td>@ticketAnalysis.CompletedTickets</td>
+                                    <td>@ticketAnalysis.CancelledTickets</td>
+                                    <td>@ticketAnalysis.RequestedDate.ToShortDateString()</td>
+                                    <td>@ticketAnalysis.AppUser</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card-5">
+            <div class="card-body">
+                @if (countTickets == null)
+                {
+                    <b>No Results to Display</b>
+                }
+                else
+                {
+                    <table style="text-align: center;">
+                        <thead>
+                            <tr>
+                                <th># of Tickets</th>
+                                <th>Ticket Status</th>
+                                <th>Assigned User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var countTicket in countTickets)
+                            {
+                                <tr>
+                                    <td>@countTicket.TicketCount</td>
+                                    <td>@countTicket.Status</td>
+                                    <td>@countTicket.AppUser</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    IEnumerable<Ticket> countTickets;
+    IEnumerable<Ticket> ticketAnalysis;
+    IEnumerable<Ticket> unhandledTickets;
+    IEnumerable<AppUser> countAppUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        countTickets = await TicketService.Ticket_Count();
+        ticketAnalysis = await TicketService.Ticket_Analytics();
+        unhandledTickets = await TicketService.Unhandled_Tickets();
+        countAppUsers = await AppUserService.AppUser_Count();
+    }
+}

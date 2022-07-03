@@ -1,0 +1,58 @@
+﻿@page "/appuserlist"
+@layout UserLayout
+
+@using ITTicketSystem.Data.AppUsers
+
+@inject IAppUserService AppUserService
+@inject IModalService modal
+
+<a href="appuseredit/0" class="btn btn-primary">Add User</a>
+<br />
+<br />
+
+@if (appUsers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email Address</th>
+                <th>Status</th>                                
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appUser in appUsers)
+            {
+                <tr>
+                    <td>@appUser.FirstName</td>
+                    <td>@appUser.LastName</td>
+                    <td>@appUser.EmailAddress</td>
+                    <td>@appUser.Status</td>                                        
+                    <td>
+                        <a href="appuseredit/@appUser.AppUserID" class="btn btn-primary">
+                            <span class="oi oi-pencil"></span>   
+                        </a>
+                        <a href="appuserdelete/@appUser.AppUserID" class="btn btn-danger">
+                            <span class="oi oi-trash"></span>
+                        </a>                        
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    IEnumerable<AppUser> appUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appUsers = await AppUserService.AppUserList();
+    }
+}
